@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: springboot2-essentials
+  web:
+    error:
+      include-stacktrace: on_param
+      include-message: always
+  datasource:
+    url: jdbc:mysql://localhost:3306/anime?createDatabaseIfNotExist=true
+    username: root
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+server:
+  error:
+    include-stacktrace: never
+    include-message: always
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG

@@ -1,0 +1,96 @@
+package academy.devdojo.springboot2.repository;
+
+import academy.devdojo.springboot2.domain.Anime;
+import academy.devdojo.springboot2.util.AnimeCreator;
+import jakarta.validation.ConstraintViolationException;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+
+import java.util.List;
+import java.util.Optional;
+
+@DataJpaTest
+@DisplayName("Tests for Anime Repository")
+class AnimeRepositoryTest {
+    @Autowired
+    private AnimeRepository animeRepository;
+    @Test
+    @DisplayName("Save persists anime when Successful")
+    void save_PersistAnime_WhenSuccessful(){
+        Anime createAnimeToBeSaved = AnimeCreator.createAnimeToBeSaved();
+        Anime animeSaved = this.animeRepository.save(createAnimeToBeSaved);
+        Assertions.assertThat(animeSaved).isNotNull();
+        Assertions.assertThat(animeSaved.getId()).isNotNull();
+        Assertions.assertThat(animeSaved.getName()).isEqualTo(createAnimeToBeSaved.getName());
+    }
+
+    @DisplayName("Save updates anime when Successful")
+    void save_UpdateAnime_WhenSuccessful(){
+        Anime createAnimeToBeSaved = AnimeCreator.createAnimeToBeSaved();
+
+        Anime animeSaved = this.animeRepository.save(createAnimeToBeSaved);
+
+        animeSaved.setName("Overlord");
+
+        Anime animeUpdate = this.animeRepository.save(animeSaved);
+
+        Assertions.assertThat(animeUpdate).isNotNull();
+
+        Assertions.assertThat(animeUpdate.getId()).isNotNull();
+
+        Assertions.assertThat(animeUpdate.getName()).isEqualTo(animeSaved.getName());
+    }
+
+    @Test
+    @DisplayName("Delete removes anime when Successful")
+    void save_DeleteAnime_WhenSuccessful(){
+        Anime createAnimeToBeSaved = AnimeCreator.createAnimeToBeSaved();
+
+        Anime animeSaved = this.animeRepository.save(createAnimeToBeSaved);
+
+        this.animeRepository.delete(animeSaved);
+
+        Optional<Anime> animeOptional = this.animeRepository.findById(animeSaved.getId());
+
+        Assertions.assertThat(animeOptional).isEmpty();
+
+    }
+
+    @Test
+    @DisplayName("Find By Name return list  of anime when Successful")
+    void findByName_returnListOfAnime_WhenSuccessful() {
+        Anime createAnimeToBeSaved = AnimeCreator.createAnimeToBeSaved();
+
+        Anime animeSaved = this.animeRepository.save(createAnimeToBeSaved);
+
+        String name = animeSaved.getName();
+        List<Anime> animes = this.animeRepository.findByName(name);
+
+        Optional<Anime> animeOptional = this.animeRepository.findById(animeSaved.getId());
+
+        Assertions.assertThat(animes)
+                .isNotEmpty()
+                .contains(animeSaved);
+    }
+
+    @Test
+    @DisplayName("Find By Name return empty list  of when no anime is found")
+    void findByName_returnEmptyListWhenAnimeIsNotFound() {
+        List<Anime> animes = this.animeRepository.findByName("xaxa");
+
+        Assertions.assertThat(animes).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Save throw ConstraintViolationException when name is empty")
+    void save_ThrowsConstraintViolationException_WhenNsmeIsEmpty(){
+        Anime anime = new Anime();
+        Assertions.assertThatExceptionOfType(ConstraintViolationException.class)
+                .isThrownBy(() -> this.animeRepository.saveAndFlush(anime))
+                .withMessageContaining("The anime name cannot be empty");
+
+    }
+}
